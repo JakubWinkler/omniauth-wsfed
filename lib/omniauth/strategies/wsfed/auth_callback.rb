@@ -8,7 +8,7 @@ module OmniAuth
 
       class AuthCallback
 
-        WS_TRUST    = 'http://schemas.xmlsoap.org/ws/2005/02/trust'
+        WS_TRUST    = 'http://docs.oasis-open.org/ws-sx/ws-trust/200512'
         WS_UTILITY  = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd'
         WS_POLICY   = 'http://schemas.xmlsoap.org/ws/2004/09/policy'
 
@@ -35,7 +35,7 @@ module OmniAuth
 
         def audience
           @audience ||= begin
-            applies_to = REXML::XPath.first(document, '//t:RequestSecurityTokenResponse/wsp:AppliesTo', { 't' => WS_TRUST, 'wsp' => WS_POLICY })
+            applies_to = REXML::XPath.first(document, '//trust:RequestSecurityTokenResponse/wsp:AppliesTo', { 'trust' => WS_TRUST, 'wsp' => WS_POLICY })
             REXML::XPath.first(applies_to, '//EndpointReference/Address').text
           end
         end
@@ -96,7 +96,7 @@ module OmniAuth
         # WS-Trust token lifetime element
         def wstrust_lifetime
           @wstrust_lifetime ||= begin
-            REXML::XPath.first(document, '//t:RequestSecurityTokenResponse/t:Lifetime', { 't' => WS_TRUST })
+            REXML::XPath.first(document, '//trust:RequestSecurityTokenResponse/trust:Lifetime', { 'trust' => WS_TRUST })
           end
         end
 

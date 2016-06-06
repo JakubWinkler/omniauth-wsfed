@@ -48,7 +48,7 @@ module OmniAuth
 
           def validate(idp_cert_fingerprint, soft = true)
             # get cert from response
-            base64_cert = self.elements["//ds:X509Certificate"].text
+            base64_cert = self.elements["//X509Certificate"].text
             cert_text   = Base64.decode64(base64_cert)
             cert        = OpenSSL::X509::Certificate.new(cert_text)
 
@@ -76,19 +76,19 @@ module OmniAuth
             end
 
             # remove signature node
-            sig_element = REXML::XPath.first(self, "//ds:Signature", {"ds"=>DSIG})
+            sig_element = REXML::XPath.first(self, "//Signature")
             sig_element.remove
 
             # check digests
-            REXML::XPath.each(sig_element, "//ds:Reference", {"ds"=>DSIG}) do |ref|
+            REXML::XPath.each(sig_element, "//Reference") do |ref|
               uri                           = ref.attributes.get_attribute("URI").value
               hashed_element                = REXML::XPath.first(self, "//[@ID='#{uri[1,uri.size]}']")
               canoner                       = XML::Util::XmlCanonicalizer.new(false, true)
               canoner.inclusive_namespaces  = inclusive_namespaces if canoner.respond_to?(:inclusive_namespaces) && !inclusive_namespaces.empty?
               canon_hashed_element          = canoner.canonicalize(hashed_element)
-	            digest_algorithm              = algorithm(REXML::XPath.first(ref, "//ds:DigestMethod"))
+	            digest_algorithm              = algorithm(REXML::XPath.first(ref, "//DigestMethod"))
               hash                          = Base64.encode64(digest_algorithm.digest(canon_hashed_element)).chomp
-              digest_value                  = REXML::XPath.first(ref, "//ds:DigestValue", {"ds"=>"http://www.w3.org/2000/09/xmldsig#"}).text
+              digest_value                  = REXML::XPath.first(ref, "//DigestValue").text
 
               unless digests_match?(hash, digest_value)
                 return soft ? false : (raise OmniAuth::Strategies::WSFed::ValidationError.new("Digest mismatch"))
@@ -97,10 +97,10 @@ module OmniAuth
 
             # verify signature
             canoner                 = XML::Util::XmlCanonicalizer.new(false, true)
-            signed_info_element     = REXML::XPath.first(sig_element, "//ds:SignedInfo", {"ds"=>DSIG})
+            signed_info_element     = REXML::XPath.first(sig_element, "//SignedInfo")
             canon_string            = canoner.canonicalize(signed_info_element)
 
-            base64_signature        = REXML::XPath.first(sig_element, "//ds:SignatureValue", {"ds"=>DSIG}).text
+            base64_signature        = REXML::XPath.first(sig_element, "//SignatureValue").text
             signature               = Base64.decode64(base64_signature)
 
             # get certificate object
@@ -108,7 +108,7 @@ module OmniAuth
             cert                    = OpenSSL::X509::Certificate.new(cert_text)
 
             # signature method
-            signature_algorithm     = algorithm(REXML::XPath.first(signed_info_element, "//ds:SignatureMethod", {"ds"=>DSIG}))
+            signature_algorithm     = algorithm(REXML::XPath.first(signed_info_element, "//SignatureMethod"))
 
             unless cert.public_key.verify(signature_algorithm.new, signature, canon_string)
               return soft ? false : (raise OmniAuth::Strategies::WSFed::ValidationError.new("Key validation error"))
@@ -124,7 +124,7 @@ module OmniAuth
           end
 
           def extract_signed_element_id
-            reference_element       = REXML::XPath.first(self, "//ds:Signature/ds:SignedInfo/ds:Reference", {"ds"=>DSIG})
+            reference_element       = REXML::XPath.first(self, "//Signature/SignedInfo/Reference")
             self.signed_element_id  = reference_element.attribute("URI").value unless reference_element.nil?
           end
 
