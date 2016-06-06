@@ -11,6 +11,7 @@ module OmniAuth
         WS_TRUST    = 'http://docs.oasis-open.org/ws-sx/ws-trust/200512'
         WS_UTILITY  = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd'
         WS_POLICY   = 'http://schemas.xmlsoap.org/ws/2004/09/policy'
+        WS_ADDRESSING = 'http://www.w3.org/2005/08/addressing'
 
         attr_accessor :options, :raw_callback, :settings
 
@@ -36,7 +37,7 @@ module OmniAuth
         def audience
           @audience ||= begin
             applies_to = REXML::XPath.first(document, '//trust:RequestSecurityTokenResponse/wsp:AppliesTo', { 'trust' => WS_TRUST, 'wsp' => WS_POLICY })
-            REXML::XPath.first(applies_to, '//EndpointReference/Address').text
+            REXML::XPath.first(applies_to, '//wsa:EndpointReference/wsa:Address', { 'wsa' => WS_ADDRESSING }).text
           end
         end
 
