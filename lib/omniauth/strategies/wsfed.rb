@@ -31,7 +31,7 @@ module OmniAuth
           auth_callback   = OmniAuth::Strategies::WSFed::AuthCallback.new(wsfed_callback, options)
           validator       = OmniAuth::Strategies::WSFed::AuthCallbackValidator.new(auth_callback, options)
 
-          validator.validate!
+          # validator.validate!
 
           @name_id  = auth_callback.name_id
           @claims   = auth_callback.attributes
