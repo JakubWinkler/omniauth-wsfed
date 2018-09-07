@@ -24,18 +24,17 @@ module OmniAuth
           validate_callback_params(@request)
 
           wsfed_callback = request.params['wresult']
-          #Rails.logger.info "**WSFED** : #{wsfed_callback}"
 
-          #signed_document = OmniAuth::Strategies::WSFed::XMLSecurity::SignedDocument.new(wsfed_callback)
-          #signed_document.validate(get_fingerprint, false)
+          signed_document = OmniAuth::Strategies::WSFed::XMLSecurity::SignedDocument.new(wsfed_callback)
+          signed_document.validate(get_fingerprint, false)
 
           auth_callback   = OmniAuth::Strategies::WSFed::AuthCallback.new(wsfed_callback, options)
+          validator       = OmniAuth::Strategies::WSFed::AuthCallbackValidator.new(auth_callback, options)
+          
+          validator.validate!
+          
           @name_id  = auth_callback.name_id
           @claims   = auth_callback.attributes
-          
-          #validator       = OmniAuth::Strategies::WSFed::AuthCallbackValidator.new(auth_callback, options)
-
-          #validator.validate!
 
           super
 
